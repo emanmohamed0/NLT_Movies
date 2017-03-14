@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/popular"
+        android:title="popular"
+        />
     <item
         android:id="@+id/high_rate"
         android:title="high_rate"
         />
     <item
-        android:id="@+id/popular"
-        android:title="popular"
+        android:id="@+id/favorite"
+        android:title="favorite"
         />
 
 </menu>

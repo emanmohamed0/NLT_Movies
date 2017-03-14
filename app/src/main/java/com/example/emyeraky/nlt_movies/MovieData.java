@@ -4,12 +4,13 @@ package com.example.emyeraky.nlt_movies;
  * Created by Emy Eraky on 2/16/2017.
  */
 public class MovieData {
-        private String ID;
-        private String poster_path ;
-        private String release_date;
-        private String overview;
-        private String original_title ;
-        private String vote_average ;
+    private String ID;
+    private String poster_path ;
+    private String release_date;
+    private String overview;
+    private String original_title ;
+    private String vote_average ;
+    private String time;
 
 
     public String getID() {
@@ -58,6 +59,14 @@ public class MovieData {
 
     public void setRelease_date(String release_date) {
         this.release_date = release_date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 }
 

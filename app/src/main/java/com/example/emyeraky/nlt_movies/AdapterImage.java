@@ -41,9 +41,15 @@ public class AdapterImage extends BaseAdapter {
         }
 
         ImageView imageView =(ImageView)view.findViewById(R.id.image);
+
         String baseUrl = "http://image.tmdb.org/t/p/w185";
-        String poster_url = baseUrl+image[i];
-        Picasso.with(context).load(poster_url).into(imageView);
+        if (image[i].contains(baseUrl)){
+            Picasso.with(context).load(image[i]).into(imageView);
+        }else {
+            String poster_url = baseUrl+image[i];
+            Picasso.with(context).load(poster_url).into(imageView);
+        }
+
 
         return view;
     }

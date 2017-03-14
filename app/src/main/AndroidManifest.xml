@@ -21,4 +21,10 @@
         <activity android:name=".DetailActivity"></activity>
     </application>
 
+    <provider
+        android:authorities="com.example.emyeraky.nlt_movies"
+        android:name=".data.FavouriteProvider"
+        android:exported="false"
+        android:syncable="true" >
+    </provider>
 </manifest>

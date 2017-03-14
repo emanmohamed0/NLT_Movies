@@ -1,8 +1,10 @@
 package com.example.emyeraky.nlt_movies;
 
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.emyeraky.nlt_movies.data.FavouriteContract;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -49,6 +52,7 @@ public class DetailActivity extends AppCompatActivity {
     static Context context;
     static ListView listView_overView;
     static ListView listView_trailer;
+    DBController dbController;
     Intent intent;
 
     @Override
@@ -77,14 +81,34 @@ public class DetailActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        favorite();
+    }
+
+    private void favorite() {
+
+        bnt_favorit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ContentValues values = new ContentValues();
+                values.put(FavouriteContract.FavouriteEntry.COLUMN_MOVIENAME, title.getText().toString());
+                values.put(FavouriteContract.FavouriteEntry.COLUMN_RATE, vote.getText().toString());
+                values.put(FavouriteContract.FavouriteEntry.COLUMN_DATE, date.getText().toString());
+                values.put(FavouriteContract.FavouriteEntry.COLUMN_OVERVIEW, "overview");
+                values.put(FavouriteContract.FavouriteEntry.COLUMN_IMAGE, movieData.getPoster_path().toString());
+
+                Uri uri = getBaseContext().getContentResolver().insert(FavouriteContract.FavouriteEntry.CONTENT_URI, values);
+
+            }
+
+
+        });
     }
 
 
-    void displayvideo(){
-        if(movieData ==null){
+    void displayvideo() {
+        if (movieData == null) {
 
-        }
-        else {
+        } else {
             if (MainActivity.isNetworkConnected()) {
                 FetchVideo video = new FetchVideo();
                 video.execute(movieData.getID(), "/videos?");
@@ -101,14 +125,72 @@ public class DetailActivity extends AppCompatActivity {
             posterurl = baseUrl + movieData.getPoster_path();
             Picasso.with(context).load(posterurl).into(posterImage);
         }
-    }
-    private static String[] getVediosKeyFromJson(String imageJsonStr) throws JSONException {
+        /*bnt_favorit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String t = title.getText().toString();
+                String r = vote.getText().toString();
+                String d = date.getText().toString();
+                String tt = time.getText().toString();
 
+
+//                if(movieData.getID()== FavoriteContract.FavoriteEntry._ID) {
+                ContentValues values = new ContentValues();
+                values.put(FavoriteContract.FavoriteEntry.MID, movieData.getID());
+                values.put(FavoriteContract.FavoriteEntry.ORIGINAL_TITLE, t);
+                values.put(FavoriteContract.FavoriteEntry.TIME, tt);
+                values.put(FavoriteContract.FavoriteEntry.DATE, d);
+                values.put(FavoriteContract.FavoriteEntry.POSTER_PATH, posterurl);
+                values.put(FavoriteContract.FavoriteEntry.POPULARITY, r);
+                Uri uri = getContentResolver().insert(FavoriteContract.FavoriteEntry.CONTENT_URI, values);
+//                }
+//            else
+//
+//            {
+//                Toast.makeText(getBaseContext(), "Unfavorite!", Toast.LENGTH_SHORT).show();
+//            }
+//               // dbController = new DBController(context);
+//
+//                Uri newUri;
+//9
+//                ContentValues values = new ContentValues();
+//
+//                values.put(FavoriteContract.FavoriteEntry.MID,movieData.getID());
+//                values.put(FavoriteContract.FavoriteEntry.ORIGINAL_TITLE,t);
+//                values.put(FavoriteContract.FavoriteEntry.TIME,tt);
+//                values.put(FavoriteContract.FavoriteEntry.DATE,d);
+//                values.put(FavoriteContract.FavoriteEntry.POSTER_PATH,posterurl);
+//                values.put(FavoriteContract.FavoriteEntry.POPULARITY,r);
+//
+//               newUri= getContentResolver().insert(
+//                        FavoriteContract.FavoriteEntry.CONTENT_URI,
+//                        values
+//                );
+
+//                if(newUri == DBHelper.myUrl){
+//                    Toast.makeText(context,"Already insert",Toast.LENGTH_SHORT).show();
+//
+//                }
+//                else {
+//                    Toast.makeText(context,"Can't insert",Toast.LENGTH_SHORT).show();
+//
+//                }
+//                long id = dbController.insert_db(movieData.getID(),t,posterurl,r,d,tt);
+//                if (id >= 0){
+//
+//                    Toast.makeText(context,"Already insert",Toast.LENGTH_SHORT).show();
+//                }else {
+//                    Toast.makeText(context,"Can't insert",Toast.LENGTH_SHORT).show();
+//                }
+            }
+        });*/
+    }
+
+    private static String[] getVediosKeyFromJson(String imageJsonStr) throws JSONException {
 
         if (flag.equals("trailer")) {
             key = "key";
-        }
-        else if(flag.equals("reviews")){
+        } else if (flag.equals("reviews")) {
             key = "content";
         }
         JSONObject imageJson = new JSONObject(imageJsonStr);
@@ -123,99 +205,99 @@ public class DetailActivity extends AppCompatActivity {
 
         return Keys;
     }
-public static class FetchVideo extends AsyncTask<String, ProgressDialog, String[]> {
-    private String LOG_TAG = FetchVideo.class.getSimpleName();
 
-    @Override
-    protected String[] doInBackground(String... params) {
+    public static class FetchVideo extends AsyncTask<String, ProgressDialog, String[]> {
+        private String LOG_TAG = FetchVideo.class.getSimpleName();
 
-        if (params.length == 0) {
+        @Override
+        protected String[] doInBackground(String... params) {
 
-            return null;
-        }
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
+            if (params.length == 0) {
 
-        String videoJsonStr = null;
-
-        try {
-            final String FORECAST_BASE_URL =
-                    "http://api.themoviedb.org/3/movie/" + params[0] + params[1];
-            final String APPID_PARAM = "api_key";
-
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(APPID_PARAM, "72659fcbe6b80e24ac36ddb5bbdbe316")
-                    .build();
-
-            URL url = new URL(builtUri.toString());
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
                 return null;
             }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line + "\n");
-            }
+            String videoJsonStr = null;
 
-            if (buffer.length() == 0) {
+            try {
+                final String FORECAST_BASE_URL =
+                        "http://api.themoviedb.org/3/movie/" + params[0] + params[1];
+                final String APPID_PARAM = "api_key";
+
+                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(APPID_PARAM, "72659fcbe6b80e24ac36ddb5bbdbe316")
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    return null;
+                }
+                videoJsonStr = buffer.toString();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error ", e);
                 return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
+                    }
+                }
             }
-            videoJsonStr = buffer.toString();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
+            try {
+                return getVediosKeyFromJson(videoJsonStr);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
             return null;
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
+        }
+
+        @Override
+        protected void onPostExecute(String[] keys_Poster) {
+
+            if (keys_Poster == null) {
+                return;
             }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
+            if (flag.equals("trailer")) {
+                String[] trailerText = new String[keys_Poster.length];
+
+                if (keys_Poster != null) {
+                    for (int i = 0; i < keys_Poster.length; i++) {
+                        poster_List.add("http://www.youtube.com/watch?v=" + keys_Poster[i]);
+                        trailerText[i] = "Trailer " + i;
+                    }
+
+                    TrailerAdapter listTrailer = new TrailerAdapter(context, trailerText);
+                    listView_trailer.setAdapter(listTrailer);
+
                 }
-            }
-        }
-        try {
-            return getVediosKeyFromJson(videoJsonStr);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String[] keys_Poster) {
-
-        if (keys_Poster == null) {
-            return;
-        }
-        if (flag.equals("trailer")) {
-            String[] trailerText = new String[keys_Poster.length];
-
-            if (keys_Poster != null) {
-                for (int i = 0; i < keys_Poster.length; i++) {
-                    poster_List.add("http://www.youtube.com/watch?v=" + keys_Poster[i]);
-                    trailerText[i] = "Trailer " + i;
-                }
-
-                TrailerAdapter listTrailer = new TrailerAdapter(context, trailerText);
-                listView_trailer.setAdapter(listTrailer);
-
-            }
-            FetchVideo video = new FetchVideo();
-            video.execute(movieData.getID(), "/reviews?");
-            flag = "reviews";
-        }
-            else if(flag.equals("reviews")){
+                FetchVideo video = new FetchVideo();
+                video.execute(movieData.getID(), "/reviews?");
+                flag = "reviews";
+            } else if (flag.equals("reviews")) {
                 if (keys_Poster != null) {
                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                             context,
@@ -223,7 +305,8 @@ public static class FetchVideo extends AsyncTask<String, ProgressDialog, String[
                             keys_Poster);
 
                     listView_overView.setAdapter(adapter);
+                }
             }
         }
     }
-}}
+}
