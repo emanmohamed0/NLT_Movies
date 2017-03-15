@@ -42,6 +42,7 @@ public class DetailActivity extends AppCompatActivity {
     static TextView time;
     static TextView vote;
     static Button bnt_favorit;
+    static String poster_url;
     static ImageView posterImage;
     static String flag;
     static String key;
@@ -85,16 +86,42 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void favorite() {
+        if(movieData ==null){
 
+        }
+        else {
+            if (MainActivity.isNetworkConnected()) {
+                // notify user you are online
+                FetchVideo video = new FetchVideo();
+                video.execute(movieData.getID(), "/videos?");
+                flag = "trailer";
+            } else {
+                Toast.makeText(context, "No Internet connected!!", Toast.LENGTH_SHORT).show();
+            }
+
+            title.setText(movieData.getOriginal_title());
+            vote.setText(movieData.getVote_average());
+
+            String baseUrl = "http://image.tmdb.org/t/p/w185";
+            poster_url = baseUrl + movieData.getPoster_path();
+            Picasso.with(context).load(poster_url).into(posterImage);
+        }
         bnt_favorit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ContentValues values = new ContentValues();
-                values.put(FavouriteContract.FavouriteEntry.COLUMN_MOVIENAME, title.getText().toString());
-                values.put(FavouriteContract.FavouriteEntry.COLUMN_RATE, vote.getText().toString());
-                values.put(FavouriteContract.FavouriteEntry.COLUMN_DATE, date.getText().toString());
-                values.put(FavouriteContract.FavouriteEntry.COLUMN_OVERVIEW, "overview");
-                values.put(FavouriteContract.FavouriteEntry.COLUMN_IMAGE, movieData.getPoster_path().toString());
+
+                String t = title.getText().toString();
+                String v = vote.getText().toString();
+                String d = date.getText().toString();
+                String tt = time.getText().toString();
+
+                values.put(FavouriteContract.FavouriteEntry.MID,movieData.getID());
+                values.put(FavouriteContract.FavouriteEntry.ORIGINAL_TITLE,t);
+                values.put(FavouriteContract.FavouriteEntry.TIME,tt);
+                values.put(FavouriteContract.FavouriteEntry.DATE,d);
+                values.put(FavouriteContract.FavouriteEntry.POSTER_PATH,poster_url);
+                values.put(FavouriteContract.FavouriteEntry.POPULARITY,v);
 
                 Uri uri = getBaseContext().getContentResolver().insert(FavouriteContract.FavouriteEntry.CONTENT_URI, values);
 

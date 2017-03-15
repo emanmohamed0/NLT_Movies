@@ -19,6 +19,8 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.example.emyeraky.nlt_movies.data.FavouriteContract;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,31 +38,48 @@ public class MainActivity extends AppCompatActivity {
     MovieData[] movieData;
     static Context context;
     ArrayList<MovieData> movieDataList;
-  //  DBController dbController;
-    DBHelper dbHelper;
-    static String stateaction ="";
+    static String stateaction = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context=getBaseContext();
+        context = getBaseContext();
         gridView = (GridView) findViewById(R.id.show_image);
 
-        if(isNetworkConnected()){
-            FetchImage fetchImage = new FetchImage();
-            fetchImage.execute("popular?");
+        //check Internet connected
+        if (isNetworkConnected()) {
+            // notify user you are online
+            if(stateaction.equals("popular")){
+                FetchImage fetchImage = new FetchImage();
+                fetchImage.execute("popular?");
+                stateaction = "popular";
+            }
+            else if(stateaction.equals("top_rated")){
+                FetchImage fetchImage = new FetchImage();
+                fetchImage.execute("top_rated?");
+                stateaction = "top_rated";
+            }
+            else if(stateaction.equals("favorite")){
+                favoritmovie();
+                stateaction = "favorite";
+            }else {
+                FetchImage fetchImage = new FetchImage();
+                fetchImage.execute("popular?");
+                stateaction = "popular";
+            }
+
+        } else {
+            Toast.makeText(getBaseContext(), "No Internet connected!!", Toast.LENGTH_SHORT).show();
         }
-        else
-            Toast.makeText(MainActivity.this, "Not connected Internet", Toast.LENGTH_SHORT).show();
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                       Intent ii = new Intent(MainActivity.this, DetailActivity.class);
-                        DetailActivity.movieData = movieData[i];
-                        startActivity(ii);
+                Intent ii = new Intent(MainActivity.this, DetailActivity.class);
+                DetailActivity.movieData = movieData[i];
+                startActivity(ii);
 
             }
         });
@@ -73,23 +92,21 @@ public class MainActivity extends AppCompatActivity {
         //check Internet connected
         if (isNetworkConnected()) {
             // notify user you are online
-            if(stateaction.equals("popular")){
+            if (stateaction.equals("popular")) {
                 FetchImage fetchImage = new FetchImage();
                 fetchImage.execute("popular?");
                 stateaction = "popular";
                 Toast.makeText(MainActivity.this, "popular", Toast.LENGTH_SHORT).show();
-            }
-            else if(stateaction.equals("top_rated")){
+            } else if (stateaction.equals("top_rated")) {
                 FetchImage fetchImage = new FetchImage();
                 fetchImage.execute("top_rated?");
                 stateaction = "top_rated";
                 Toast.makeText(MainActivity.this, "top_rated", Toast.LENGTH_SHORT).show();
-            }
-            else if(stateaction.equals("favorite")){
+            } else if (stateaction.equals("favorite")) {
                 favoritmovie();
                 stateaction = "favorite";
                 Toast.makeText(MainActivity.this, "favorite", Toast.LENGTH_SHORT).show();
-            }else {
+            } else {
                 FetchImage fetchImage = new FetchImage();
                 fetchImage.execute("popular?");
                 stateaction = "popular";
@@ -100,22 +117,22 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getBaseContext(), "No Internet connected!!", Toast.LENGTH_SHORT).show();
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main,menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id= item.getItemId();
-        if(id==R.id.popular&isNetworkConnected()){
-            FetchImage fetchImage =new FetchImage();
+        int id = item.getItemId();
+        if (id == R.id.popular & isNetworkConnected()) {
+            FetchImage fetchImage = new FetchImage();
             fetchImage.execute("popular?");
             stateaction = "popular";
             Toast.makeText(MainActivity.this, "popularOption", Toast.LENGTH_SHORT).show();
-        }
-        else if(id==R.id.high_rate&&isNetworkConnected()){
+        } else if (id == R.id.high_rate && isNetworkConnected()) {
             FetchImage fetchImage = new FetchImage();
             fetchImage.execute("top_rated?");
             stateaction = "top_rated";
@@ -128,36 +145,33 @@ public class MainActivity extends AppCompatActivity {
                 favoritmovie();
                 stateaction = "favorite";
                 Toast.makeText(MainActivity.this, "favoriteOption", Toast.LENGTH_SHORT).show();
-            } else{
+            } else {
                 favoritmovie();
                 Toast.makeText(MainActivity.this, "No Internet Connected", Toast.LENGTH_SHORT).show();
-        }}
+            }
+        }
         return super.onOptionsItemSelected(item);
     }
 
 
     // use to tell connection network
-    static  boolean isNetworkConnected(){
+    static boolean isNetworkConnected() {
         ConnectivityManager connectivityManager
-                = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    public void favoritmovie(){
+    public void favoritmovie() {
         movieDataList = new ArrayList<>();
         MovieData movie;
-
-        dbHelper = new DBHelper();
-       // dbController = new DBController(this);
-       // dbController.open();
 
         String [] column ={DBHelper.MID,DBHelper.ORIGINAL_TITLE,DBHelper.TIME,DBHelper.DATE,DBHelper.POSTER_PATH,DBHelper.POPULARITY};
 
 
         try {
             Cursor cursor = getContentResolver().query(
-                    DBHelper.myUrl,   // The content URI of the words table
+                    FavouriteContract.FavouriteEntry.CONTENT_URI,   // The content URI of the words table
                     column,                        // The columns to return for each row
                     null,                   // Selection criteria
                     null,                     // Selection criteria
@@ -184,13 +198,13 @@ public class MainActivity extends AppCompatActivity {
                 AdapterImage adapterImage = new AdapterImage(getBaseContext(), poster);
                 gridView.setAdapter(adapterImage);
                 movieData = new MovieData[movieDataList.size()];
-                for (int i=0;i<movieDataList.size();i++){
-                    movieData[i]= movieDataList.get(i);
+                for (int i = 0; i < movieDataList.size(); i++) {
+                    movieData[i] = movieDataList.get(i);
                 }
                 gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                   //     actionLand(flag, position);
+                        //     actionLand(flag, position);
                         Intent ii = new Intent(MainActivity.this, DetailActivity.class);
                         DetailActivity.movieData = movieData[i];
                         startActivity(ii);
@@ -198,11 +212,10 @@ public class MainActivity extends AppCompatActivity {
                 });
 
             }
-
-        } catch (Exception e) {
+            }catch (Exception e) {
             e.printStackTrace();
         }
-    //    dbController.close_db();
+
     }
 
 
@@ -217,9 +230,9 @@ public class MainActivity extends AppCompatActivity {
         final String release_date = "release_date";
 
         JSONObject jsonObject = new JSONObject(imageJsonStr);
-        JSONArray jsonArray =jsonObject.getJSONArray("results");
-        movieData= new MovieData[jsonArray.length()];
-        for(int i = 0; i < jsonArray.length(); i++) {
+        JSONArray jsonArray = jsonObject.getJSONArray("results");
+        movieData = new MovieData[jsonArray.length()];
+        for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject image = jsonArray.getJSONObject(i);
 
             movieData[i] = new MovieData();
@@ -233,7 +246,8 @@ public class MainActivity extends AppCompatActivity {
 
         return movieData;
     }
-        public class FetchImage extends AsyncTask<String, ProgressDialog, MovieData[]> {
+
+    public class FetchImage extends AsyncTask<String, ProgressDialog, MovieData[]> {
         private String LOG_TAG = FetchImage.class.getSimpleName();
 
         @Override
@@ -302,21 +316,21 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-            @Override
-            protected void onPostExecute(MovieData[] movieDatas) {
-                String[] posters = new String[movieDatas.length];
+        @Override
+        protected void onPostExecute(MovieData[] movieDatas) {
+            String[] posters = new String[movieDatas.length];
 
-                if (movieDatas != null) {
-                    for (int i = 0; i < movieDatas.length; i++) {
+            if (movieDatas != null) {
+                for (int i = 0; i < movieDatas.length; i++) {
 
-                        posters[i] = movieDatas[i].getPoster_path();
-                    }
-
-                    AdapterImage adapterImage = new AdapterImage(getBaseContext(), posters);
-                    gridView.setAdapter(adapterImage);
+                    posters[i] = movieDatas[i].getPoster_path();
                 }
+
+                AdapterImage adapterImage = new AdapterImage(getBaseContext(), posters);
+                gridView.setAdapter(adapterImage);
             }
-            }
+        }
+    }
 
 }
 

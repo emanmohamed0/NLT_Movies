@@ -22,16 +22,14 @@ public class FavouriteDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        final String SQL_CREATE_Favourite_TABLE = "CREATE TABLE " + FavouriteEntry.TABLE_NAME + " (" +
-                FavouriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                FavouriteEntry.COLUMN_MOVIENAME + " TEXT NOT NULL," +
-                FavouriteEntry.COLUMN_RATE + " Text NOT NULL," +
-                FavouriteEntry.COLUMN_DATE + " TEXT DEFAULT SYSDATE," +
-                FavouriteEntry.COLUMN_OVERVIEW + " TEXT NOT NULL," +
-                FavouriteEntry.COLUMN_IMAGE + " TEXT NOT NULL" +
-                " )";
+        //create TABLE
+        final String CREATE_TABLE="CREATE TABLE "+FavouriteContract.FavouriteEntry.TABLE_NAME+
+                "("+FavouriteContract.FavouriteEntry.ID+" INTEGER PRIMARY KEY AUTOINCREMENT,"+
+                FavouriteContract.FavouriteEntry.MID+" TEXT,"+FavouriteContract.FavouriteEntry.ORIGINAL_TITLE+
+                " TEXT,"+FavouriteContract.FavouriteEntry.TIME+" TEXT,"+FavouriteContract.FavouriteEntry.DATE+
+                " TEXT,"+FavouriteContract.FavouriteEntry.POSTER_PATH+" TEXT,"+FavouriteContract.FavouriteEntry.POPULARITY+" TEXT);";
 
-        db.execSQL(SQL_CREATE_Favourite_TABLE);
+        db.execSQL(CREATE_TABLE);
 
     }
 

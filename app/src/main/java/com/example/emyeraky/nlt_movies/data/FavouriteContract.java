@@ -17,12 +17,14 @@ public class FavouriteContract {
 
     public static final class FavouriteEntry implements BaseColumns {
 
-        public static final String TABLE_NAME = "favourite";
-        public static final String COLUMN_MOVIENAME = "movie_name";
-        public static final String COLUMN_RATE = "rate";
-        public static final String COLUMN_DATE = "date";
-        public static final String COLUMN_OVERVIEW = "overview";
-        public static final String COLUMN_IMAGE = "image";
+        public static final String TABLE_NAME = "movie";
+        public static final String ID="_id";
+        public static final String MID="id";
+        public static final String POSTER_PATH = "poster_path" ;
+        public static final String TIME = "time" ;
+        public static final String ORIGINAL_TITLE ="original_title" ;
+        public static final String POPULARITY = "popularity" ;
+        public static final String DATE = "date";
 
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVOURITE).build();
 
